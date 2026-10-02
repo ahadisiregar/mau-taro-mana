@@ -234,7 +234,7 @@ footer{margin-top:30px;border-top:1.5px solid var(--line);padding-top:16px;font-
         <p style="font-size:15.5px;color:var(--tx2)">Kami uji: <b style="color:var(--tx)">setiap kali RSI harian turun di bawah 35, beli lalu tahan 1 tahun.</b> Hasilnya:</p>
         <table>
           <tr><th>Pasar</th><th>Rata-rata 1 thn</th></tr>
-          <tr><td>Nasdaq (US)</td><td>+29%</td></tr>
+          <tr><td>Nasdaq (US)</td><td>+24%</td></tr>
           <tr><td>IHSG</td><td>+16%</td></tr>
           <tr><td>Bitcoin</td><td>+34%</td></tr>
         </table>
@@ -264,7 +264,8 @@ const CONFIG = {
   maxStaleDays: 5,              // a market's RSI older than this is shown as 'data lama' and NOT used for routing
   rsiThreshold: 35,
   // ---- Allocation knobs (edit here) ----
-  forexPct: { m: 50, h: 70 },   // % to Forex EA for Mid / High risk; the rest goes to RDPU
+  forexPct: { m: 50, h: 70 },
+  forexWithGreen: { m: { asset: 40, fx: 40 }, h: { asset: 40, fx: 50 } },   // ≥1 thn WITH a green signal and forex = Ya/Coba: % green asset / % forex EA, rest RDPU   // % to Forex EA for Mid / High risk; the rest goes to RDPU
   shortStockPct: { m: 30, h: 50 }, // horizon 1–3 bln + Nasdaq/IHSG green: % to stocks; rest split RDPT/RDPU
   cryptoForHigh: true,          // BTC green counts for High risk, horizon ≥ 1 tahun
   sbnMinAmount: 1000000,        // below this amount SBN is swapped for RDPT
@@ -379,10 +380,13 @@ const Q = {
 };
 function forexOpts() {
   const pct = CONFIG.forexPct[S.risk] || 50;
+  const g = S.horizon === 'ge1y' ? greens() : [];
+  const mix = g.length ? CONFIG.forexWithGreen[S.risk] : null;
+  const sub = mix ? mix.asset + '% ke ' + g.map(x => MKT_NAME[x]).join(' & ') + ', ' + mix.fx + '% ke forex EA, ' + (100 - mix.asset - mix.fx) + '% RDPU' : pct + '% ke forex EA, sisanya RDPU';
   return [
-    { v: 'yes',   t: 'Ya, saya paham risikonya', s: pct + '% ke forex EA, sisanya RDPU' },
+    { v: 'yes',   t: 'Ya, saya paham risikonya', s: sub },
     { v: 'learn', t: 'Hmmm apa tuh? Coba pelajari dulu', s: 'Lihat rekomendasinya + link belajar' },
-    { v: 'no',    t: 'Tidak', s: 'Pilih yang lebih stabil' }
+    { v: 'no',    t: 'Tidak', s: mix ? 'Semua ke ' + g.map(x => MKT_NAME[x]).join(' & ') + ' yang sedang diskon' : 'Pilih yang lebih stabil' }
   ];
 }
 
@@ -502,7 +506,7 @@ function needsForexQ() {
   const { horizon: h, risk: r } = S;
   if (!h || !r || r === 'l') return false;            // Low risk never sees forex
   if (h === '3to6m' || h === '6to12m') return true;   // green signals don't change this
-  if (h === 'ge1y') return greens().length === 0;     // green → stocks instead
+  if (h === 'ge1y') return true;                      // ≥1 thn: asked with or without a green signal (the split differs)
   return false;
 }
 function splitItems(keys, total = 100) {
@@ -581,7 +585,14 @@ function route() {
       why.push('Horizon kamu <b>1 tahun atau lebih</b> dan kamu siap dengan naik-turun.');
       greenWhy(g).forEach(x => why.push(x));
       if (isGreen('btc') && !g.includes('CRYPTO')) why.push('Bitcoin juga hijau, tapi crypto hanya kami sarankan untuk profil risiko <b>tinggi</b>.');
-      if (g.length > 1) why.push('Lebih dari satu pasar hijau, jadi uangnya dibagi supaya tidak bertumpu di satu tempat.');
+      if (g.length > 1) why.push('Lebih dari satu pasar hijau, jadi bagian pasar hijau dibagi supaya tidak bertumpu di satu tempat.');
+      if (f === 'yes' || f === 'learn') {
+        const mix = CONFIG.forexWithGreen[r], rest = 100 - mix.asset - mix.fx;
+        why.push('Kamu siap risiko, dan di forex EA <b>ukuran risiko kamu yang atur</b>. Hasil backtest-nya juga bisa dicek dulu sebelum uang masuk.');
+        why.push(`Dibagi tiga: <b>${mix.asset}%</b> ke pasar yang sedang diskon, <b>${mix.fx}%</b> ke forex EA (jalan sekarang, tanpa menunggu sinyal), dan <b>${rest}%</b> di RDPU sebagai bantalan.`);
+        return done('stock-fx', [...splitItems(g, mix.asset), { k: 'FX', pct: mix.fx }, { k: 'RDPU', pct: rest }], { learn: f === 'learn' });
+      }
+      why.push('Kamu memilih tidak ikut forex EA, jadi seluruhnya ke pasar yang sedang diskon.');
       return done('stock', splitItems(g));
     }
   }
@@ -681,8 +692,10 @@ function promoBlock(key) {
   return `<div class="promo"><p>${p.note}</p><a class="btn btn-o btn-s" href="${p.url}" target="_blank" rel="noopener sponsored">${p.cta}</a></div>`;
 }
 
-function fxPitch() {
-  const pct = CONFIG.forexPct[S.risk];
+function fxPitch(R) {
+  const fxItem = R && R.items.find(i => i.k === 'FX');
+  const pct = fxItem ? fxItem.pct : CONFIG.forexPct[S.risk];
+  const mixed = R && R.kind === 'stock-fx';
   const st = (CONFIG.ea.stats || []).filter(x => x.v);
   return `<section class="sec"><div class="lbl">Kenapa Forex EA?</div>
     <div class="card why" style="margin-top:10px"><ul>
@@ -692,14 +705,14 @@ function fxPitch() {
     </ul>
     ${st.length ? `<div class="stat">${st.map(x => `<div><b>${esc(x.v)}</b><small>${esc(x.l)}</small></div>`).join('')}</div>` : ''}
     </div>
-    <div class="note warn"><b>Jujur soal risikonya:</b> backtest bukan jaminan. Hasil live bisa berbeda dan drawdown bisa lebih besar. Karena itu porsinya ${pct}%, sisanya di RDPU.</div></section>`;
+    <div class="note warn"><b>Jujur soal risikonya:</b> backtest bukan jaminan. Hasil live bisa berbeda dan drawdown bisa lebih besar. Karena itu porsinya ${pct}%, sisanya di ${mixed ? 'pasar yang sedang diskon dan RDPU' : 'RDPU'}.</div></section>`;
 }
 
 function renderResult() {
   const R = route();
   const isShort = S.horizon === '1to3m';
   const hasFx = R.items.some(i => i.k === 'FX');
-  const head = { forex: 'Forex EA: risiko yang bisa kamu ukur', stock: 'Sinyal hijau: waktunya beli', 'stock-short': 'Aman dulu, saham sedikit saat diskon', park: 'Parkir dulu, pindah saat sinyal hijau' }[R.kind]
+  const head = { forex: 'Forex EA: risiko yang bisa kamu ukur', stock: 'Sinyal hijau: waktunya beli', 'stock-fx': 'Sinyal hijau + forex EA', 'stock-short': 'Aman dulu, saham sedikit saat diskon', park: 'Parkir dulu, pindah saat sinyal hijau' }[R.kind]
     || 'Prioritas: aman & mudah dicairkan';
 
   const cards = R.items.map((it, idx) => {
@@ -724,7 +737,7 @@ function renderResult() {
 
   let bt = '';
   const btKey = R.items.find(i => i.k === 'US') ? 'nasdaq' : R.items.find(i => i.k === 'IHSG') ? 'ihsg' : null;
-  if (R.kind === 'stock' && btKey) {
+  if ((R.kind === 'stock' || R.kind === 'stock-fx') && btKey) {
     const b = BACKTEST[btKey];
     bt = `<section class="sec"><div class="lbl">Secara historis · ${btKey === 'nasdaq' ? 'Nasdaq' : 'IHSG'} ${b.period}</div>
       <div class="stat"><div><b class="go">${b.win}</b><small>sinyal untung setelah 1 thn</small></div><div><b>${b.avg}</b><small>rata-rata 1 tahun</small></div><div><b class="neg">${b.worst}</b><small>hasil terburuk</small></div></div>
@@ -738,7 +751,7 @@ function renderResult() {
 
   const hasRef = R.items.some(i => INST[i.k].promo || i.k === 'FX');
   const refNote = hasRef ? `<p class="hint" style="margin-top:14px;font-size:13px"><b>Transparansi:</b> tombol daftar di atas memakai kode referral Market Scope ID. Kamu bisa mendapat bonus, dan Market Scope ID bisa menerima imbalan dari mitra.</p>` : '';
-  const pitch = hasFx ? fxPitch() : '';
+  const pitch = hasFx ? fxPitch(R) : '';
   const learnNote = R.learn ? `<div class="note"><b>Belum familiar dengan forex EA?</b> Pelajari dulu cara kerjanya, backtest-nya, dan cara mengatur ukuran risikonya <b>sebelum</b> menaruh dana. Alokasi di atas adalah target setelah kamu paham.</div>` : '';
   const teaser = R.low ? `<div class="note"><b>Penasaran dengan forex EA?</b> Ukuran risikonya bisa diatur dan hasilnya bisa dibacktest. <a href="${CONFIG.links.learn}" target="_blank" rel="noopener" style="text-decoration:underline">Pelajari dulu tanpa harus menaruh uang →</a></div>` : '';
   const parkNote = R.park ? `<section class="sec"><div class="sec-h"><span class="lbl">Pantau sinyalnya</span></div><div class="card"><div class="sig">${$('#sigList').innerHTML}</div><p class="sig-foot">Balik ke halaman ini untuk cek. Saat ada titik di zona hijau, pindahkan dari RDPU.</p></div></section>` : '';
