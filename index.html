@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taruh Mana? · Market Scope ID</title>
+<meta name="description" content="Ada uang nganggur? Jawab 3 pertanyaan, dapat rekomendasi tempat menaruhnya berdasarkan sinyal pasar hari ini.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Michroma&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07080B;--s1:#12151B;--s2:#1B1F28;--line:#2A2F38;--tx:#F2F6FF;--tx2:#C9D1E3;--mu:#8A93A6;--mu2:#5E6678;
+  --ac:#FF2E4D;--acd:#E0102F;--go:#2EE59D;--god:#12B878;--warn:#FFB547;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font-family:Jost,system-ui,sans-serif;font-size:17px;line-height:1.5;min-height:100vh;
+  background-image:radial-gradient(circle at 50% 0%,#161A22 0%,rgba(7,8,11,0) 60%),
+  linear-gradient(rgba(242,246,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(242,246,255,.03) 1px,transparent 1px);
+  background-size:100% 700px,36px 36px,36px 36px;background-repeat:no-repeat,repeat,repeat}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+a{color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 48px}
+.mono{font-family:"JetBrains Mono",monospace}
+.disp{font-family:Michroma,sans-serif;text-transform:uppercase;letter-spacing:.03em;font-weight:400}
+
+/* top */
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 0 8px;font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;color:var(--mu);text-transform:uppercase}
+.brand{display:flex;align-items:center;gap:10px;color:var(--tx)}
+.top .back{color:var(--mu);padding:6px 0;letter-spacing:.12em}
+.top .back:hover{color:var(--tx)}
+.hidden{display:none!important}
+
+/* hero */
+.kicker{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.2em;color:var(--ac);text-transform:uppercase}
+h1{font-family:Michroma,sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(30px,9vw,44px);line-height:1.15;letter-spacing:.03em;margin-top:14px;text-shadow:0 0 28px rgba(170,220,255,.22)}
+h2{font-family:Michroma,sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(20px,5.6vw,26px);line-height:1.25;letter-spacing:.03em}
+.lead{color:var(--tx2);font-size:18px;margin-top:14px}
+.lead b{color:var(--tx);font-weight:600}
+.rule{height:4px;width:140px;margin-top:22px;background:linear-gradient(90deg,var(--ac),rgba(255,46,77,0));box-shadow:0 0 14px rgba(255,46,77,.5);border-radius:2px}
+
+/* cards */
+.card{background:rgba(18,21,27,.9);border:1.5px solid var(--line);border-radius:var(--r);padding:18px}
+.sec{margin-top:28px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.lbl{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.16em;color:var(--mu);text-transform:uppercase}
+
+/* signal meters */
+.sig{display:grid;gap:14px}
+.sig-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.sig-name{font-weight:600;font-size:16px}
+.sig-name small{font-weight:400;color:var(--mu);font-size:13px;margin-left:6px}
+.sig-val{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:15px;text-align:right}
+.sig-val.go{color:var(--go)}
+.sig-bar{grid-column:1/-1;position:relative;height:10px;border-radius:5px;background:var(--s2);overflow:visible}
+.sig-zone{position:absolute;left:0;top:0;bottom:0;width:30%;border-radius:5px 0 0 5px;background:rgba(46,229,157,.16);border-right:1.5px dashed rgba(46,229,157,.6)}
+.sig-dot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--tx);box-shadow:0 0 0 3px var(--bg)}
+.sig-dot.go{background:var(--go);box-shadow:0 0 0 3px var(--bg),0 0 12px rgba(46,229,157,.8)}
+.sig-dot.na{display:none}
+.sig-state{grid-column:1/-1;font-size:13px;color:var(--mu)}
+.sig-state .go{color:var(--go);font-weight:600}
+.sig-foot{margin-top:14px;font-size:12px;color:var(--mu2);line-height:1.45}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1.5px solid var(--line);color:var(--mu)}
+.pill .d{width:7px;height:7px;border-radius:50%;background:var(--mu)}
+.pill.live .d{background:var(--go);box-shadow:0 0 8px var(--go)}
+.pill.demo{border-color:var(--warn);color:var(--warn)}
+.pill.demo .d{background:var(--warn)}
+
+/* buttons */
+.btn{text-decoration:none;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:17px 22px;border-radius:14px;font-weight:600;font-size:18px;transition:transform .12s,box-shadow .2s,background .2s}
+.btn-p{background:var(--ac);color:#fff;box-shadow:0 0 26px rgba(255,46,77,.38)}
+.btn-p:hover{background:#ff4461}
+.btn-p:active{transform:scale(.985)}
+.btn-p:disabled{background:var(--s2);color:var(--mu2);box-shadow:none;cursor:not-allowed}
+.btn-g{border:1.5px solid var(--line);color:var(--tx2)}
+.btn-g:hover{border-color:var(--mu)}
+.btn:focus-visible,.opt:focus-visible,.chip:focus-visible,input:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+
+/* quiz */
+.prog{display:flex;gap:6px;margin:10px 0 26px}
+.prog i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.prog i.on{background:var(--ac);box-shadow:0 0 8px rgba(255,46,77,.5)}
+.q-num{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.18em;color:var(--ac)}
+.q-title{margin-top:10px}
+.q-sub{color:var(--mu);margin-top:8px;font-size:16px}
+.opts{display:grid;gap:10px;margin-top:22px}
+.opt{text-align:left;display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:16px;border-radius:14px;border:1.5px solid var(--line);background:rgba(18,21,27,.9);transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--mu)}
+.opt.sel{border-color:var(--ac);background:rgba(255,46,77,.08)}
+.opt .k{font-family:"JetBrains Mono",monospace;font-size:13px;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;border:1.5px solid var(--line);color:var(--mu)}
+.opt.sel .k{border-color:var(--ac);color:var(--ac)}
+.opt .t{font-weight:600;font-size:17px;line-height:1.3}
+.opt .t small{display:block;font-weight:400;color:var(--mu);font-size:14px;margin-top:2px}
+
+.money{display:flex;align-items:center;gap:10px;margin-top:22px;border:1.5px solid var(--line);border-radius:14px;padding:6px 16px;background:rgba(18,21,27,.9)}
+.money:focus-within{border-color:var(--ac)}
+.money span{font-family:"JetBrains Mono",monospace;color:var(--mu);font-size:20px}
+.money input{flex:1;min-width:0;background:none;border:0;color:var(--tx);font-family:"JetBrains Mono",monospace;font-weight:700;font-size:28px;padding:10px 0}
+.money input:focus{outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);font-size:15px;font-weight:500;color:var(--tx2)}
+.chip:hover{border-color:var(--mu)}
+.hint{font-size:14px;color:var(--mu);margin-top:10px;min-height:20px}
+.q-actions{margin-top:26px}
+
+/* result */
+.res-head{margin-top:6px}
+.alloc{margin-top:20px;display:grid;gap:12px}
+.stack{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:3px;margin-top:4px}
+.stack i{display:block;height:100%}
+.inst{border-radius:var(--r);border:1.5px solid var(--line);background:rgba(18,21,27,.92);padding:18px}
+.inst.main{border-color:var(--ac);box-shadow:0 0 22px rgba(255,46,77,.14)}
+.inst-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.inst-tag{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mu)}
+.inst-name{font-weight:700;font-size:20px;line-height:1.25;margin-top:4px;display:flex;align-items:center;gap:8px}
+.inst-name .sw{width:10px;height:10px;border-radius:3px;flex:none}
+.inst-amt{text-align:right;flex:none}
+.inst-amt b{display:block;font-family:"JetBrains Mono",monospace;font-size:19px}
+.inst-amt small{color:var(--mu);font-family:"JetBrains Mono",monospace;font-size:13px}
+.inst-desc{color:var(--tx2);font-size:15px;margin-top:10px}
+.risk{display:flex;gap:4px;margin-top:12px;align-items:center}
+.risk i{width:22px;height:6px;border-radius:3px;background:var(--line)}
+.risk i.on{background:var(--tx2)}
+.risk i.on.hi{background:var(--ac)}
+.risk span{font-size:12px;color:var(--mu);margin-left:8px;font-family:"JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase}
+
+.picks{margin-top:14px;border-top:1.5px solid var(--line);padding-top:12px}
+.picks table{width:100%;border-collapse:collapse;font-size:14px}
+.picks th{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:10.5px;letter-spacing:.12em;color:var(--mu);text-transform:uppercase;text-align:right;padding:0 0 6px}
+.picks th:first-child{text-align:left}
+.picks td{padding:8px 0;border-top:1px solid var(--line);text-align:right;font-family:"JetBrains Mono",monospace;font-weight:700;font-size:14px}
+.picks td:first-child{text-align:left;font-family:Jost,sans-serif;font-weight:600;font-size:15px}
+.picks td:first-child small{display:block;font-weight:400;color:var(--mu);font-size:12.5px}
+.picks .neg{color:var(--ac)}
+.picks .empty{font-size:14px;color:var(--mu)}
+
+.why{margin-top:16px}
+.why ul{list-style:none;display:grid;gap:10px;margin-top:10px}
+.why li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:15.5px;color:var(--tx2)}
+.why li::before{content:"";width:8px;height:8px;margin-top:8px;border-radius:2px;background:var(--ac);box-shadow:0 0 8px rgba(255,46,77,.6)}
+.why b{color:var(--tx)}
+
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat div{background:var(--s1);border:1.5px solid var(--line);border-radius:12px;padding:12px 10px;text-align:center}
+.stat b{display:block;font-family:"JetBrains Mono",monospace;font-size:20px}
+.stat b.go{color:var(--go)}
+.stat b.neg{color:var(--ac)}
+.stat small{font-size:12px;color:var(--mu);line-height:1.3;display:block;margin-top:2px}
+
+.note{margin-top:16px;border-left:4px solid var(--ac);background:rgba(255,46,77,.07);padding:14px 16px;border-radius:0 14px 14px 0;font-size:15px;color:var(--tx2)}
+.note b{color:var(--tx)}
+.note.warn{border-color:var(--warn);background:rgba(255,181,71,.07)}
+
+.bt table{width:100%;border-collapse:collapse;margin-top:6px;font-size:14px}
+.bt th{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:10.5px;letter-spacing:.1em;color:var(--mu);text-transform:uppercase;text-align:right;padding:0 0 8px}
+.bt th:first-child{text-align:left}
+.bt td{padding:10px 0;border-top:1px solid var(--line);text-align:right;font-family:"JetBrains Mono",monospace;font-weight:700}
+.bt td:first-child{text-align:left;font-family:Jost,sans-serif;font-weight:600;font-size:15px}
+.bt td:first-child small{display:block;font-weight:400;color:var(--mu);font-size:12px}
+
+.cta{margin-top:24px;display:grid;gap:10px}
+.btn-o{border:1.5px solid var(--ac);color:var(--tx);background:rgba(255,46,77,.08)}
+.btn-o:hover{background:rgba(255,46,77,.16)}
+.promo{margin-top:14px;border:1.5px dashed var(--line);border-radius:14px;padding:14px;display:grid;gap:12px}
+.promo p{font-size:14.5px;color:var(--tx2);line-height:1.45}
+.promo p b{color:var(--tx)}
+.btn-s{padding:13px 18px;font-size:16px}
+.tape{margin-top:26px;border:1.5px solid var(--line);border-radius:14px;overflow:hidden;min-height:52px;background:rgba(18,21,27,.9)}
+.tape .tradingview-widget-container{width:100%}
+.tabs{margin-top:14px}
+.chip.on{border-color:var(--ac);color:var(--tx);background:rgba(255,46,77,.08)}
+.tvbox{height:430px;border-radius:14px;overflow:hidden;margin-top:12px;border:1.5px solid var(--line);background:#0F1217;position:relative}
+.tvbox .tradingview-widget-container,.tvbox .tradingview-widget-container__widget{height:100%;width:100%}
+.tvfail{padding:22px 18px;color:var(--mu);font-size:14.5px;line-height:1.5}
+.tvfail a,.sig-foot a{color:var(--tx2);text-decoration:underline}
+.tkr-link{color:var(--mu);font-size:12px;margin-left:6px;text-decoration:none;font-family:"JetBrains Mono",monospace}
+.tkr-link:hover{color:var(--tx)}
+.disc{margin-top:28px;font-size:12.5px;color:var(--mu2);line-height:1.55}
+.disc b{color:var(--mu)}
+footer{margin-top:30px;border-top:1.5px solid var(--line);padding-top:16px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;color:var(--mu2);text-transform:uppercase;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+.fade{animation:fade .28s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fade{animation:none}.btn{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ret" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#FF2E4D" stroke-width="6"/><circle cx="50" cy="50" r="21" fill="none" stroke="#FF2E4D" stroke-width="1.5" stroke-dasharray="3 4"/><g stroke="#FF2E4D" stroke-width="5"><line x1="50" y1="0" x2="50" y2="24"/><line x1="50" y1="76" x2="50" y2="100"/><line x1="0" y1="50" x2="24" y2="50"/><line x1="76" y1="50" x2="100" y2="50"/></g><circle cx="50" cy="50" r="6" fill="#F2F6FF"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <div class="top">
+    <span class="brand"><svg width="22" height="22"><use href="#ret"/></svg>Market Scope ID</span>
+    <button class="back hidden" id="backBtn" type="button">← Kembali</button>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <main id="scr-intro" class="fade">
+    <div class="kicker" style="margin-top:22px">Kalkulator · Taruh Mana?</div>
+    <h1>Ada uang<br>nganggur?</h1>
+    <p class="lead">Cashback 300rb, bonus 5jt, sisa gaji… Jawab <b>3 pertanyaan</b>, dapat rekomendasi <b>mau ditaruh di mana</b>, berdasarkan <b>kondisi pasar hari ini</b>.</p>
+    <div class="rule"></div>
+
+    <div class="tape" id="tape" aria-label="Harga pasar live"></div>
+
+    <section class="sec">
+      <div class="sec-h"><span class="lbl">Sinyal pasar hari ini</span><span class="pill" id="sigPill"><span class="d"></span><span id="sigPillTx">memuat…</span></span></div>
+      <div class="card">
+        <div class="sig" id="sigList"></div>
+        <p class="sig-foot">Titik di zona hijau (RSI harian &lt; 30) = pasar sedang “diskon” secara teknikal. <span id="sigUpdated"></span></p>
+      </div>
+    </section>
+
+    <section class="sec" id="chartSec" style="margin-top:14px">
+      <button class="btn btn-g" type="button" id="chartToggle" aria-expanded="false" aria-controls="chartPanel">Lihat chart &amp; RSI ▾</button>
+      <div id="chartPanel" class="hidden">
+        <div class="chips tabs" id="chartTabs" role="tablist" aria-label="Pilih pasar"></div>
+        <div class="tvbox" id="tvBox"></div>
+        <p class="sig-foot" id="tvNote" style="margin-top:10px"></p>
+        <p class="sig-foot">Garis RSI di panel bawah chart: di bawah 30 = zona hijau. Angka di TradingView bisa beda 1–2 poin dari angka di atas karena sumber data dan jam tutup berbeda. <a id="tvOpen" href="#" target="_blank" rel="noopener">Buka di TradingView ↗</a></p>
+      </div>
+    </section>
+
+    <div class="q-actions"><button class="btn btn-p" type="button" id="startBtn">Mulai · 1 menit →</button></div>
+
+    <section class="sec bt">
+      <div class="sec-h"><span class="lbl">Kenapa RSI &lt; 30?</span></div>
+      <div class="card">
+        <p style="font-size:15.5px;color:var(--tx2)">Kami uji: <b style="color:var(--tx)">setiap kali RSI harian turun di bawah 30, beli lalu tahan 1 tahun.</b> Hasilnya:</p>
+        <table>
+          <tr><th>Pasar</th><th>Rata-rata 1 thn</th></tr>
+          <tr><td>Nasdaq (US)</td><td>+24%</td></tr>
+          <tr><td>IHSG</td><td>+14%</td></tr>
+          <tr><td>Bitcoin</td><td>+37%</td></tr>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ QUIZ ============ -->
+  <main id="scr-quiz" class="hidden">
+    <div class="prog" id="prog"></div>
+    <div id="qBody"></div>
+  </main>
+
+  <!-- ============ RESULT ============ -->
+  <main id="scr-result" class="hidden"></main>
+
+  <p class="disc"><b>Disclaimer:</b> Halaman ini adalah alat edukasi, bukan nasihat investasi pribadi. Semua instrumen investasi dan trading mengandung risiko, termasuk kehilangan modal. Sinyal RSI adalah indikator teknikal, bukan jaminan harga akan naik. Kinerja masa lalu tidak menjamin hasil di masa depan. Keputusan dan risiko sepenuhnya ada pada kamu.</p>
+  <footer><span>© Market Scope ID</span><span>Edukasi · bukan ajakan beli</span><span>Chart &amp; harga: <a href="https://www.tradingview.com/?aff_id=1171693" target="_blank" rel="noopener sponsored" style="text-decoration:underline">TradingView</a></span></footer>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — edit these
+   ===================================================================== */
+const CONFIG = {
+  signalsUrl: 'https://taruh-mana-signals.sir-ahadi.workers.dev',   // 'signals.json' (written by update_signals.py) OR your Worker URL, e.g. https://taruh-mana.yourname.workers.dev
+  maxStaleDays: 5,              // a market's RSI older than this is shown as 'data lama' and NOT used for routing
+  rsiThreshold: 30,
+  // ---- Allocation knobs (edit here) ----
+  forexPct: { m: 50, h: 70 },   // % to Forex EA for Mid / High risk; the rest goes to RDPU
+  shortStockPct: { m: 30, h: 50 }, // horizon 1–3 bln + Nasdaq/IHSG green: % to stocks; rest split RDPT/RDPU
+  cryptoForHigh: true,          // BTC green counts for High risk, horizon ≥ 1 tahun
+  sbnMinAmount: 1000000,        // below this amount SBN is swapped for RDPT
+  // Split when several signals are green (horizon ≥ 1 tahun). Order: US, IHSG, Crypto.
+  split: { 1: [100], 2: [70, 30], 3: [50, 30, 20] },
+  // Your real, verifiable EA numbers. Empty values are hidden on the page.
+  ea: { stats: [ { v: '7/7', l: 'kuartal profit (Jan 2025–Sep 2026)' }, { v: '7.9%', l: 'max drawdown equity, risiko 1%/trade' }, { v: '1.67', l: 'profit factor, 159 trade' } ] },  // e.g. { v: '12%', l: 'max drawdown backtest' }
+  links: {
+    tradingview: 'https://www.tradingview.com/?aff_id=1171693',                  // every TradingView link on the page (affiliate)
+    telegram: 'https://t.me/marketscopeID',            // discussion with Market Scope
+    copyTrade: 'https://www.hftidtrade.com/en/?refid=379400', // start forex / copy trade
+    eaTrackRecord: 'https://t.me/marketscopeID/222',   // check the forex EA
+    learn: 'https://t.me/marketscopeID'                // "pelajari dulu" destination
+  },
+  // TradingView widgets (free embeds). Symbols use TradingView's EXCHANGE:SYMBOL format.
+  tv: {
+    studies: ['RSI@tv-basicstudies'],     // indicator(s) drawn under the chart; RSI default length is 14
+    tape: [   // symbols in the live-price strip (extra ones stop the same market repeating side by side on phones)
+      { sym: 'FOREXCOM:NSXUSD', label: 'Nasdaq' },
+      { sym: 'IDX:COMPOSITE',   label: 'IHSG' },
+      { sym: 'BITSTAMP:BTCUSD', label: 'Bitcoin' },
+      { sym: 'OANDA:XAUUSD',    label: 'Emas' },
+      { sym: 'FX_IDC:USDIDR',   label: 'USD/IDR' }
+    ],
+    markets: [
+      { key: 'nasdaq', label: 'Nasdaq',  sym: 'FOREXCOM:NSXUSD', note: 'Chart ini Nasdaq 100 (CFD). Backtest kami memakai Nasdaq Composite; keduanya bergerak mirip.' },
+      { key: 'ihsg',   label: 'IHSG',    sym: 'IDX:COMPOSITE' },
+      { key: 'btc',    label: 'Bitcoin', sym: 'BITSTAMP:BTCUSD' }
+    ]
+  },
+  // Referral offers shown inside the matching result cards (INST.promo points to a key here)
+  promo: {
+    bibit: { url: 'https://linkto.bibit.id/SJpp/referralbibit',
+             note: 'Daftar di Bibit dan dapat <b>cashback Rp25.000</b>. Masukkan kode referral <b>marketscopeid</b> saat pendaftaran (syarat berlaku).',
+             cta: 'Buka Bibit · cashback Rp25.000 →' },
+    heygo: { url: 'https://heygo.trade/referral-64b91db18a',
+             note: 'Daftar dan dapat <b>bonus sambutan hingga $1.888</b> dengan kode referral <b>507636</b> (syarat &amp; ketentuan berlaku).',
+             cta: 'Buka akun saham US →' }
+  },
+  // Used if signals.json can't be loaded. Values from last manual update.
+  fallback: {
+    updated: '2026-10-01',
+    markets: {
+      nasdaq: { rsi: 63.7, date: '2026-10-02' },   
+      ihsg:   { rsi: 27.45, date: '2026-10-01' },   // read by hand from the TradingView IHSG D1 chart
+      btc:    { rsi: 60.9, date: '2026-09-28' }
+    },
+    picks: { us: [], ihsg: [] }
+  }
+};
+
+/* Backtest numbers (RSI D1 < 30, hold 1 year) */
+const BACKTEST = {
+  nasdaq: { n: 8, win: '7/8', avg: '+24%', worst: '−21%', period: '2016–2026', m3: { avg: '+11%', win: '67%' } },
+  ihsg:   { n: 31, win: '74%', avg: '+14%', worst: '−42%', period: '2005–2025', m3: { avg: '−0,6%', win: '59%' } },
+  btc:    null
+};
+
+const MARKETS = [
+  { key: 'nasdaq', name: 'Nasdaq', sub: 'Saham US' },
+  { key: 'ihsg',   name: 'IHSG',   sub: 'Saham Indonesia' },
+  { key: 'btc',    name: 'Bitcoin', sub: 'Crypto' }
+];
+
+const INST = {
+  US:     { name: 'Saham US', tag: 'Sinyal hijau · Nasdaq', color: '#FF2E4D', risk: 4,
+            promo: 'heygo',
+            desc: 'Beli bertahap di 5 kandidat di bawah lewat aplikasi broker yang menyediakan saham US. Rencanakan tahan minimal 1 tahun.',
+            descShort: 'Beli bertahap di 5 kandidat di bawah. Horizonmu pendek, jadi harga bisa turun dulu sebelum naik. Karena itu porsinya dibatasi.' },
+  IHSG:   { name: 'Saham Indonesia', tag: 'Sinyal hijau · IHSG', color: '#F2F6FF', risk: 4,
+            desc: 'Beli bertahap di 5 kandidat di bawah lewat sekuritas terdaftar OJK. Rencanakan tahan minimal 1 tahun.',
+            descShort: 'Beli bertahap di 5 kandidat di bawah. Horizonmu pendek, jadi harga bisa turun dulu sebelum naik. Karena itu porsinya dibatasi.' },
+  CRYPTO: { name: 'Crypto (Bitcoin)', tag: 'Sinyal hijau · BTC', color: '#FFB547', risk: 5,
+            desc: 'Beli BTC di exchange yang terdaftar resmi di Indonesia. Volatilitas sangat tinggi: siap lihat nilai turun 30–50%.' },
+  FX:     { name: 'Forex EA (Copy Trade)', tag: 'Copy trade EA', color: '#9FB4D9', risk: 5,
+            desc: 'Dana mengikuti strategi EA secara otomatis. Ukuran risiko (lot & batas rugi) ditetapkan dari awal, dan kamu bisa top up kapan saja.' },
+  SBN:    { name: 'SBN Ritel (ORI / SR / ST / SBR)', tag: 'SBN', color: '#C9D1E3', risk: 1, promo: 'bibit',
+            desc: 'Surat utang negara, dijamin pemerintah, imbal hasil jelas. Tenornya tetap dan tidak selalu bisa dicairkan kapan saja. Umumnya mulai Rp1 juta; cek jadwal penawaran di kanal resmi.' },
+  RDPT:   { name: 'Reksa Dana Pendapatan Tetap', tag: 'RDPT', color: '#8A93A6', risk: 2, promo: 'bibit',
+            desc: 'Isinya obligasi. Imbal hasil biasanya di atas RDPU. Sesekali bisa turun sedikit, jadi paling cocok untuk dana yang dipakai 1 bulan ke atas.' },
+  RDPU:   { name: 'Reksa Dana Pasar Uang', tag: 'RDPU', color: '#5E6678', risk: 1, promo: 'bibit',
+            desc: 'Paling stabil & likuid, cair 1–2 hari kerja. Tempat parkir terbaik untuk uang yang bisa dipakai sewaktu-waktu.' }
+};
+const RISK_LBL = ['', 'Sangat rendah', 'Rendah', 'Sedang', 'Tinggi', 'Sangat tinggi'];
+
+const Q = {
+  horizon: {
+    title: 'Kira-kira kapan uang ini mungkin kepake?',
+    sub: 'Jujur aja, ini yang paling menentukan.',
+    opts: [
+      { v: 'lt1m',   t: 'Kurang dari 1 bulan', s: 'Bisa kepake kapan aja' },
+      { v: '1to3m',  t: '1–3 bulan' },
+      { v: '3to6m',  t: '3–6 bulan' },
+      { v: '6to12m', t: '6–12 bulan' },
+      { v: 'ge1y',   t: '1 tahun atau lebih', s: 'Uang ini bisa “dilupakan” dulu' }
+    ]
+  },
+  risk: {
+    title: 'Kalau uang ini turun 30%, kamu…',
+    sub: 'Misal Rp1.000.000 jadi Rp700.000. Penurunan sebesar ini hanya bisa terjadi di saham dan forex, bukan di reksa dana pasar uang, RDPT, atau SBN.',
+    opts: [
+      { v: 'l', t: 'Nggak boleh turun sama sekali', s: 'Yang penting aman' },
+      { v: 'm', t: 'Diam aja, tunggu balik', s: 'Naik-turun itu biasa' },
+      { v: 'h', t: 'Tambah beli', s: 'Turun = diskon' }
+    ]
+  },
+  forex: {
+    title: 'Forex EA: risikonya bisa kamu atur. Mau coba?',
+    sub: 'Ukuran risiko ditetapkan dari awal, dan hasil backtest-nya bisa dicek sebelum uang masuk. Tanpa menunggu pasar “diskon”, dan bisa top up kapan saja.',
+    opts: null   // built in forexOpts() because the % depends on the risk answer
+  }
+};
+function forexOpts() {
+  const pct = CONFIG.forexPct[S.risk] || 50;
+  return [
+    { v: 'yes',   t: 'Ya, saya paham risikonya', s: pct + '% ke forex EA, sisanya RDPU' },
+    { v: 'learn', t: 'Hmmm apa tuh? Coba pelajari dulu', s: 'Lihat rekomendasinya + link belajar' },
+    { v: 'no',    t: 'Tidak', s: 'Pilih yang lebih stabil' }
+  ];
+}
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+const S = { amount: 0, horizon: null, risk: null, forex: null, step: 0 };
+let SIG = JSON.parse(JSON.stringify(CONFIG.fallback));
+let SIG_SOURCE = 'fallback';
+const DEMO = new URLSearchParams(location.search).get('demo'); // e.g. ?demo=nasdaq,ihsg,btc
+
+const $ = (s) => document.querySelector(s);
+const fmtRp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* =====================================================================
+   SIGNALS
+   ===================================================================== */
+function rsiWilder(closes, p = 14) {
+  if (closes.length < p + 2) return null;
+  let g = 0, l = 0;
+  for (let i = 1; i <= p; i++) { const d = closes[i] - closes[i - 1]; if (d > 0) g += d; else l -= d; }
+  g /= p; l /= p;
+  for (let i = p + 1; i < closes.length; i++) {
+    const d = closes[i] - closes[i - 1];
+    g = (g * (p - 1) + Math.max(d, 0)) / p;
+    l = (l * (p - 1) + Math.max(-d, 0)) / p;
+  }
+  return l === 0 ? 100 : 100 - 100 / (1 + g / l);
+}
+
+async function loadSignals() {
+  // 1) signals.json from the daily job
+  try {
+    const r = await fetch(CONFIG.signalsUrl + '?t=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) { const j = await r.json(); if (j && j.markets) { SIG = j; SIG_SOURCE = 'file'; } }
+  } catch (e) {}
+  // Sanity: a stock RSI below 1 is a data glitch (Wilder RSI never really hits 0), so never show it as a pick
+  try { ['us','ihsg'].forEach(k => { if (SIG.picks && Array.isArray(SIG.picks[k])) SIG.picks[k] = SIG.picks[k].filter(p => typeof p.rsi === 'number' && p.rsi >= 1); }); } catch (e) {}
+  // 2) BTC live straight from CoinGecko (works in any browser, no key)
+  try {
+    const r = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=200&interval=daily');
+    if (r.ok) {
+      const j = await r.json();
+      const pts = (j.prices || []).slice(0, -1); // drop the still-open day
+      const v = rsiWilder(pts.map(p => p[1]));
+      if (v != null) {
+        const d = new Date(pts[pts.length - 1][0]).toISOString().slice(0, 10);
+        SIG.markets.btc = { ...(SIG.markets.btc || {}), rsi: +v.toFixed(1), date: d, live: true };
+        if (SIG_SOURCE === 'fallback') SIG_SOURCE = 'partial';
+      }
+    }
+  } catch (e) {}
+  // 3) Demo override for previewing green scenarios
+  if (DEMO) {
+    DEMO.split(',').map(s => s.trim()).forEach(k => { if (SIG.markets[k]) SIG.markets[k] = { ...SIG.markets[k], rsi: 24.6, date: 'demo' }; });
+    if (!SIG.picks || !SIG.picks.us || !SIG.picks.us.length) SIG.picks = { ...(SIG.picks || {}), us: DEMO_PICKS.us };
+    if (!SIG.picks.ihsg || !SIG.picks.ihsg.length) SIG.picks.ihsg = DEMO_PICKS.ihsg;
+  }
+  renderSignals();
+}
+const DEMO_PICKS = {
+  us:   [['AAPL','Apple'],['MSFT','Microsoft'],['NVDA','Nvidia'],['AMZN','Amazon'],['GOOGL','Alphabet']].map(([t,n],i)=>({ticker:t,name:n,rsi:22+i*1.5,fromHigh:-(18+i*2.2)})),
+  ihsg: [['BBCA','Bank Central Asia'],['BBRI','Bank Rakyat Indonesia'],['BMRI','Bank Mandiri'],['TLKM','Telkom Indonesia'],['ASII','Astra International']].map(([t,n],i)=>({ticker:t,name:n,rsi:21+i*1.7,fromHigh:-(15+i*2.6)}))
+};
+
+function isFresh(m) {
+  if (!m || typeof m.rsi !== 'number') return false;
+  if (m.date === 'demo') return true;
+  const d = Date.parse(m.date);
+  if (isNaN(d)) return false;
+  const today = Date.parse(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }));
+  return (today - d) / 86400000 <= CONFIG.maxStaleDays;
+}
+const isGreen = (k) => { const m = SIG.markets[k]; return isFresh(m) && m.rsi < CONFIG.rsiThreshold; };
+
+function renderSignals() {
+  $('#sigList').innerHTML = MARKETS.map(({ key, name, sub }) => {
+    const m = SIG.markets[key] || {};
+    const has = typeof m.rsi === 'number';
+    const fresh = isFresh(m);
+    const go = fresh && m.rsi < CONFIG.rsiThreshold;
+    const pos = has ? Math.max(0, Math.min(100, m.rsi)) : 0;
+    const state = !has ? 'Data belum tersedia'
+      : !fresh ? 'Data lama (' + esc(m.date) + '), belum dipakai sampai diperbarui'
+      : go ? '<span class="go">● Hijau: sedang diskon</span>'
+      : 'Belum diskon · perlu turun ' + (m.rsi - CONFIG.rsiThreshold).toFixed(1) + ' poin lagi';
+    return `<div class="sig-row">
+      <div class="sig-name">${name}<small>${sub}</small></div>
+      <div class="sig-val ${go ? 'go' : ''}">${has ? 'RSI ' + m.rsi.toFixed(1) : '—'}</div>
+      <div class="sig-bar" role="img" aria-label="${name} RSI ${has ? m.rsi.toFixed(1) : 'tidak tersedia'}"><div class="sig-zone"></div><div class="sig-dot ${go ? 'go' : ''} ${has ? '' : 'na'}" style="left:${pos}%"></div></div>
+      <div class="sig-state">${state}</div>
+    </div>`;
+  }).join('');
+  const pill = $('#sigPill');
+  const anyStale = MARKETS.some(({ key }) => { const m = SIG.markets[key]; return m && typeof m.rsi === 'number' && !isFresh(m); });
+  pill.className = 'pill ' + (DEMO || anyStale ? 'demo' : (SIG_SOURCE === 'fallback' ? '' : 'live'));
+  $('#sigPillTx').textContent = DEMO ? 'mode demo' : anyStale ? 'ada data lama' : SIG_SOURCE === 'fallback' ? 'data terakhir' : 'live';
+  $('#sigUpdated').textContent = 'Update: ' + (SIG.updated || '—') + (SIG.markets.btc && SIG.markets.btc.live ? ' · BTC live' : '') + '.';
+}
+
+/* =====================================================================
+   ROUTING
+   ===================================================================== */
+function stockGreens() {
+  const g = [];
+  if (isGreen('nasdaq')) g.push('US');
+  if (isGreen('ihsg')) g.push('IHSG');
+  return g;
+}
+function greens() {                       // used for horizon ≥ 1 tahun
+  const g = stockGreens();
+  if (CONFIG.cryptoForHigh && S.risk === 'h' && isGreen('btc')) g.push('CRYPTO');
+  return g;
+}
+function needsForexQ() {
+  const { horizon: h, risk: r } = S;
+  if (!h || !r || r === 'l') return false;            // Low risk never sees forex
+  if (h === '3to6m' || h === '6to12m') return true;   // green signals don't change this
+  if (h === 'ge1y') return greens().length === 0;     // green → stocks instead
+  return false;
+}
+function splitItems(keys, total = 100) {
+  const w = CONFIG.split[keys.length] || keys.map(() => 100 / keys.length);
+  return keys.map((k, i) => ({ k, pct: Math.round(total * w[i] / 100) }));
+}
+function mergeItems(items) {
+  const m = {};
+  items.forEach(i => { m[i.k] = (m[i.k] || 0) + i.pct; });
+  return Object.entries(m).map(([k, pct]) => ({ k, pct }));
+}
+function finish(R) {
+  if (R.items.some(i => i.k === 'SBN') && S.amount < CONFIG.sbnMinAmount) {
+    R.items = mergeItems(R.items.map(i => i.k === 'SBN' ? { k: 'RDPT', pct: i.pct } : i));
+    R.why.push('SBN umumnya mulai <b>Rp1 juta</b>, jadi untuk jumlah ini diganti RDPT (risiko juga rendah, bisa mulai dari nominal kecil).');
+  }
+  return R;
+}
+const MKT_NAME = { US: 'Nasdaq', IHSG: 'IHSG', CRYPTO: 'Bitcoin' };
+const MKT_KEY = { US: 'nasdaq', IHSG: 'ihsg', CRYPTO: 'btc' };
+const greenWhy = (list) => list.map(x => `<b>${MKT_NAME[x]}</b> sedang di RSI <b>${SIG.markets[MKT_KEY[x]].rsi.toFixed(1)}</b> (di bawah ${CONFIG.rsiThreshold}): secara teknikal sedang “diskon”.`);
+
+function noSignalText() {
+  const g = MARKETS.filter(m => isGreen(m.key));
+  if (!g.length) return 'Saat ini <b>belum ada pasar yang di zona diskon</b> (RSI &lt; ' + CONFIG.rsiThreshold + ').';
+  return `<b>${g.map(m => m.name).join(' & ')}</b> sedang diskon, tapi crypto hanya kami sarankan untuk profil risiko <b>tinggi</b>.`;
+}
+
+function route() {
+  const { horizon: h, risk: r, forex: f } = S;
+  const HL = { lt1m: 'kurang dari 1 bulan', '1to3m': '1–3 bulan', '3to6m': '3–6 bulan', '6to12m': '6–12 bulan', ge1y: '1 tahun atau lebih' };
+  const why = [];
+  const done = (kind, items, extra = {}) => finish({ kind, items: mergeItems(items), why, ...extra });
+
+  // 1) Horizon < 1 bulan → RDPU (any risk)
+  if (h === 'lt1m') {
+    why.push(`Uangnya mungkin dipakai dalam <b>${HL[h]}</b>, jadi harus bisa dicairkan cepat dan tidak boleh turun.`);
+    return done('safe', [{ k: 'RDPU', pct: 100 }]);
+  }
+
+  // 2) Low risk → RDPU / RDPT / SBN only
+  if (r === 'l') {
+    why.push('Kamu <b>tidak mau nilainya turun</b>, jadi saham dan forex tidak dipakai (keduanya bisa turun 30% atau lebih).');
+    if (h === '1to3m') {
+      why.push('Untuk 1–3 bulan: separuh RDPT (imbal hasil lebih tinggi), separuh RDPU (cair paling cepat).');
+      return done('safe', [{ k: 'RDPT', pct: 50 }, { k: 'RDPU', pct: 50 }], { low: true });
+    }
+    if (h === '3to6m') {
+      why.push('Untuk 3–6 bulan, RDPT memberi imbal hasil lebih tinggi dari RDPU dengan risiko tetap rendah.');
+      return done('safe', [{ k: 'RDPT', pct: 100 }], { low: true });
+    }
+    why.push(`Karena uangnya tidak dipakai dalam <b>${h === 'ge1y' ? '1 tahun' : '6 bulan'}</b>, SBN cocok: dijamin pemerintah dan imbal hasilnya jelas.`);
+    return done('safe', [{ k: 'SBN', pct: 100 }], { low: true });
+  }
+
+  // From here: risk = Mid or High
+  const sg = stockGreens();
+
+  // 3) Horizon 1–3 bulan → mostly safe, a slice of stocks if green
+  if (h === '1to3m') {
+    why.push(`Uangnya mungkin dipakai dalam <b>${HL[h]}</b>: terlalu pendek untuk forex, dan saham butuh waktu untuk pulih kalau turun.`);
+    if (sg.length) {
+      const sp = CONFIG.shortStockPct[r], rest = 100 - sp, half = Math.round(rest / 2);
+      greenWhy(sg).forEach(x => why.push(x));
+      why.push(`Porsi saham dibatasi <b>${sp}%</b> karena horizon pendek. Sisanya di RDPT & RDPU.`);
+      return done('stock-short', [...splitItems(sg, sp), { k: 'RDPT', pct: half }, { k: 'RDPU', pct: rest - half }]);
+    }
+    why.push('Dibagi RDPT dan RDPU: stabil, dan bisa dicairkan kalau dibutuhkan.');
+    return done('safe', [{ k: 'RDPT', pct: 50 }, { k: 'RDPU', pct: 50 }]);
+  }
+
+  // 4) Horizon ≥ 1 tahun + green signal → stocks / crypto (forex question skipped)
+  if (h === 'ge1y') {
+    const g = greens();
+    if (g.length) {
+      why.push('Horizon kamu <b>1 tahun atau lebih</b> dan kamu siap dengan naik-turun.');
+      greenWhy(g).forEach(x => why.push(x));
+      if (isGreen('btc') && !g.includes('CRYPTO')) why.push('Bitcoin juga hijau, tapi crypto hanya kami sarankan untuk profil risiko <b>tinggi</b>.');
+      if (g.length > 1) why.push('Lebih dari satu pasar hijau, jadi uangnya dibagi supaya tidak bertumpu di satu tempat.');
+      return done('stock', splitItems(g));
+    }
+  }
+
+  // 5) Forex EA flow (3–12 bulan any signal, or ≥ 1 tahun with no green)
+  const safe = h === '3to6m' ? 'RDPT' : h === '6to12m' ? 'SBN' : 'RDPU';
+  if (f === 'yes' || f === 'learn') {
+    const pct = CONFIG.forexPct[r];
+    if (h === 'ge1y') why.push(noSignalText());
+    else {
+      why.push(`Horizon <b>${HL[h]}</b> terlalu pendek untuk beli saham saat diskon (butuh minimal 1 tahun), tapi cukup untuk forex EA yang bisa jalan sekarang.`);
+      if (sg.length) why.push(`Walau <b>${sg.map(x => MKT_NAME[x]).join(' & ')}</b> sedang diskon, sinyal itu baru terbukti untuk horizon 1 tahun ke atas.`);
+    }
+    why.push('Kamu siap risiko, dan di forex EA <b>ukuran risiko kamu yang atur</b>. Hasil backtest-nya juga bisa dicek dulu sebelum uang masuk.');
+    why.push(`Porsi forex <b>${pct}%</b>, sisanya diparkir di RDPU (siap dipindah ke saham saat sinyal hijau).`);
+    return done('forex', [{ k: 'FX', pct }, { k: 'RDPU', pct: 100 - pct }], { learn: f === 'learn' });
+  }
+
+  // 6) Declined forex → the stable instrument for that horizon
+  why.push(h === 'ge1y' ? noSignalText() : `Horizon <b>${HL[h]}</b>: saham butuh minimal 1 tahun untuk beli saat diskon.`);
+  why.push('Kamu memilih tidak ikut forex EA.');
+  why.push(h === 'ge1y' ? '<b>Parkir dulu di RDPU</b>: aman, cair cepat, dan bisa dipindah saat sinyal berubah hijau.'
+    : `Dana ditaruh di <b>${safe}</b> yang stabil.`);
+  return done(h === 'ge1y' ? 'park' : 'safe', [{ k: safe, pct: 100 }], { park: h === 'ge1y' });
+}
+
+/* =====================================================================
+   QUIZ UI
+   ===================================================================== */
+function steps() { return needsForexQ() ? ['amount', 'horizon', 'risk', 'forex'] : ['amount', 'horizon', 'risk']; }
+
+function show(id) {
+  ['intro', 'quiz', 'result'].forEach(x => $('#scr-' + x).classList.toggle('hidden', x !== id));
+  $('#backBtn').classList.toggle('hidden', id === 'intro');
+  const el = $('#scr-' + id); el.classList.remove('fade'); void el.offsetWidth; el.classList.add('fade');
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+function renderQ() {
+  const st = steps(), key = st[S.step];
+  $('#prog').innerHTML = st.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('');
+  const num = `<div class="q-num">${String(S.step + 1).padStart(2, '0')} / ${String(st.length).padStart(2, '0')}</div>`;
+
+  if (key === 'amount') {
+    $('#qBody').innerHTML = `${num}<h2 class="q-title">Berapa uang yang mau ditaruh?</h2>
+      <p class="q-sub">Uang “nganggur”: bukan uang makan, bukan dana darurat.</p>
+      <label class="money" for="amt"><span>Rp</span><input id="amt" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Jumlah uang dalam rupiah" value="${S.amount ? S.amount.toLocaleString('id-ID') : ''}"></label>
+      <div class="chips">${[300000, 1000000, 5000000, 10000000, 50000000].map(v => `<button type="button" class="chip" data-v="${v}">${v >= 1e6 ? v / 1e6 + 'jt' : v / 1e3 + 'rb'}</button>`).join('')}</div>
+      <p class="hint" id="amtHint"></p>
+      <div class="q-actions"><button class="btn btn-p" id="nextBtn" type="button" ${S.amount >= 10000 ? '' : 'disabled'}>Lanjut →</button></div>`;
+    const inp = $('#amt');
+    const set = (v) => { S.amount = v; inp.value = v ? v.toLocaleString('id-ID') : ''; $('#nextBtn').disabled = v < 10000; $('#amtHint').textContent = v && v < 10000 ? 'Minimal Rp10.000' : ''; };
+    inp.addEventListener('input', () => set(parseInt(inp.value.replace(/\D/g, '') || '0', 10)));
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter' && S.amount >= 10000) next(); });
+    document.querySelectorAll('.chip').forEach(c => c.onclick = () => set(+c.dataset.v));
+    $('#nextBtn').onclick = next;
+    if (matchMedia('(pointer:fine)').matches) inp.focus();
+    return;
+  }
+
+  const q = Q[key];
+  const opts = key === 'forex' ? forexOpts() : q.opts;
+  $('#qBody').innerHTML = `${num}<h2 class="q-title">${q.title}</h2><p class="q-sub">${q.sub}</p>
+    <div class="opts" role="radiogroup">${opts.map((o, i) => `<button type="button" role="radio" aria-checked="${S[key] === o.v}" class="opt ${S[key] === o.v ? 'sel' : ''}" data-v="${o.v}"><span class="k">${String.fromCharCode(65 + i)}</span><span class="t">${o.t}${o.s ? `<small>${o.s}</small>` : ''}</span></button>`).join('')}</div>
+    ${key === 'forex' ? `<div class="note warn"><b>Transparansi:</b> Market Scope ID bisa menerima komisi dari broker jika kamu ikut copy trade lewat link kami. Hasil EA tidak dijamin dan bisa rugi.</div>` : ''}`;
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    S[key] = b.dataset.v;
+    document.querySelectorAll('.opt').forEach(x => { x.classList.toggle('sel', x === b); x.setAttribute('aria-checked', x === b); });
+    setTimeout(next, 180);
+  });
+}
+
+function next() {
+  const st = steps();
+  if (S.step < st.length - 1) { S.step++; renderQ(); }
+  else { renderResult(); show('result'); }
+}
+function back() {
+  if (!$('#scr-result').classList.contains('hidden')) { S.step = steps().length - 1; renderQ(); show('quiz'); return; }
+  if (S.step > 0) { S.step--; renderQ(); } else show('intro');
+}
+
+/* =====================================================================
+   RESULT UI
+   ===================================================================== */
+const tvLink = () => CONFIG.links.tradingview;
+function picksTable(list, kind) {
+  if (!list || !list.length) return `<div class="picks"><p class="empty">Daftar 5 kandidat diperbarui otomatis setiap hari setelah pasar tutup.</p></div>`;
+  return `<div class="picks"><table><tr><th>5 kandidat</th><th>RSI</th><th>Dari puncak</th></tr>
+    ${list.slice(0, 5).map(p => `<tr><td>${esc(p.ticker)}<a class="tkr-link" href="${tvLink(kind, p.ticker)}" target="_blank" rel="noopener" aria-label="Chart ${esc(p.ticker)} di TradingView">chart ↗</a><small>${esc(p.name)}</small></td><td>${(+p.rsi).toFixed(1)}</td><td class="neg">${(+p.fromHigh).toFixed(1)}%</td></tr>`).join('')}
+  </table></div>`;
+}
+
+function promoBlock(key) {
+  const p = key && CONFIG.promo[key];
+  if (!p) return '';
+  return `<div class="promo"><p>${p.note}</p><a class="btn btn-o btn-s" href="${p.url}" target="_blank" rel="noopener sponsored">${p.cta}</a></div>`;
+}
+
+function fxPitch() {
+  const pct = CONFIG.forexPct[S.risk];
+  const st = (CONFIG.ea.stats || []).filter(x => x.v);
+  return `<section class="sec"><div class="lbl">Kenapa Forex EA?</div>
+    <div class="card why" style="margin-top:10px"><ul>
+      <li><span><b>Risiko kamu yang tentukan.</b> Ukuran posisi dan batas rugi diset dari awal, jadi kerugian maksimum per transaksi sudah diketahui sebelum transaksi dibuka.</span></li>
+      <li><span><b>Risikonya bisa diukur sebelum uang masuk.</b> Backtest memberi angka nyata (max drawdown, konsistensi per kuartal). Kamu menilai dari data, bukan dari perasaan.</span></li>
+      <li><span><b>Nggak perlu menunggu pasar murah.</b> Bisa mulai sekarang dan top up kapan saja.</span></li>
+    </ul>
+    ${st.length ? `<div class="stat">${st.map(x => `<div><b>${esc(x.v)}</b><small>${esc(x.l)}</small></div>`).join('')}</div>` : ''}
+    </div>
+    <div class="note warn"><b>Jujur soal risikonya:</b> backtest bukan jaminan. Hasil live bisa berbeda dan drawdown bisa lebih besar. Karena itu porsinya ${pct}%, sisanya di RDPU.</div></section>`;
+}
+
+function renderResult() {
+  const R = route();
+  const isShort = S.horizon === '1to3m';
+  const hasFx = R.items.some(i => i.k === 'FX');
+  const head = { forex: 'Forex EA: risiko yang bisa kamu ukur', stock: 'Sinyal hijau: waktunya beli', 'stock-short': 'Aman dulu, saham sedikit saat diskon', park: 'Parkir dulu, pindah saat sinyal hijau' }[R.kind]
+    || 'Prioritas: aman & mudah dicairkan';
+
+  const cards = R.items.map((it, idx) => {
+    const I = INST[it.k];
+    const desc = (isShort && I.descShort) ? I.descShort : I.desc;
+    const extra = it.k === 'US' ? picksTable(SIG.picks && SIG.picks.us, 'us')
+      : it.k === 'IHSG' ? picksTable(SIG.picks && SIG.picks.ihsg, 'ihsg')
+      : it.k === 'FX' ? `<div class="cta" style="margin-top:14px"><a class="btn btn-o btn-s" href="${CONFIG.links.copyTrade}" target="_blank" rel="noopener sponsored">Mulai coba forex →</a><a class="btn btn-g btn-s" href="${CONFIG.links.eaTrackRecord}" target="_blank" rel="noopener">Cek EA forex &amp; track record</a></div>` : '';
+    return `<div class="inst ${idx === 0 ? 'main' : ''}">
+      <div class="inst-top">
+        <div><div class="inst-tag">${I.tag}</div><div class="inst-name"><span class="sw" style="background:${I.color}"></span>${I.name}</div></div>
+        <div class="inst-amt"><b>${fmtRp(S.amount * it.pct / 100)}</b><small>${it.pct}%</small></div>
+      </div>
+      <p class="inst-desc">${desc}</p>
+      <div class="risk" aria-label="Risiko ${RISK_LBL[I.risk]}">${[1, 2, 3, 4, 5].map(n => `<i class="${n <= I.risk ? 'on' + (I.risk >= 4 ? ' hi' : '') : ''}"></i>`).join('')}<span>Risiko ${RISK_LBL[I.risk]}</span></div>
+      ${promoBlock(I.promo)}
+      ${extra}
+    </div>`;
+  }).join('');
+
+  const stack = R.items.length > 1 ? `<div class="stack" aria-hidden="true">${R.items.map(i => `<i style="flex:${i.pct};background:${INST[i.k].color}"></i>`).join('')}</div>` : '';
+
+  let bt = '';
+  const btKey = R.items.find(i => i.k === 'US') ? 'nasdaq' : R.items.find(i => i.k === 'IHSG') ? 'ihsg' : null;
+  if (R.kind === 'stock' && btKey) {
+    const b = BACKTEST[btKey];
+    bt = `<section class="sec"><div class="lbl">Secara historis · ${btKey === 'nasdaq' ? 'Nasdaq' : 'IHSG'} ${b.period}</div>
+      <div class="stat"><div><b class="go">${b.win}</b><small>sinyal untung setelah 1 thn</small></div><div><b>${b.avg}</b><small>rata-rata 1 tahun</small></div><div><b class="neg">${b.worst}</b><small>hasil terburuk</small></div></div>
+      <div class="note">Sinyal bagus pun biasanya diikuti <b>penurunan ±12–14%</b> di tengah jalan sebelum naik. Beli bertahap dan jangan panik.</div></section>`;
+  }
+  if (R.kind === 'stock-short' && btKey) {
+    const parts = R.items.filter(i => i.k === 'US' || i.k === 'IHSG').map(i => { const k = i.k === 'US' ? 'nasdaq' : 'ihsg'; const m = BACKTEST[k].m3; return `${k === 'nasdaq' ? 'Nasdaq' : 'IHSG'}: rata-rata ${m.avg}, untung di ${m.win} kejadian`; });
+    bt = `<div class="note warn"><b>Untuk horizon pendek, sinyal ini kurang pasti.</b> 3 bulan setelah sinyal, secara historis ${parts.join('; ')}. Itu sebabnya porsi sahamnya dibatasi.</div>`;
+  }
+  if (R.items.some(i => i.k === 'CRYPTO')) bt += `<div class="note warn">Data historis Bitcoin untuk sinyal ini belum cukup untuk diuji. Anggap ini porsi paling spekulatif.</div>`;
+
+  const hasRef = R.items.some(i => INST[i.k].promo || i.k === 'FX');
+  const refNote = hasRef ? `<p class="hint" style="margin-top:14px;font-size:13px"><b>Transparansi:</b> tombol daftar di atas memakai kode referral Market Scope ID. Kamu bisa mendapat bonus, dan Market Scope ID bisa menerima imbalan dari mitra.</p>` : '';
+  const pitch = hasFx ? fxPitch() : '';
+  const learnNote = R.learn ? `<div class="note"><b>Belum familiar dengan forex EA?</b> Pelajari dulu cara kerjanya, backtest-nya, dan cara mengatur ukuran risikonya <b>sebelum</b> menaruh dana. Alokasi di atas adalah target setelah kamu paham.</div>` : '';
+  const teaser = R.low ? `<div class="note"><b>Penasaran dengan forex EA?</b> Ukuran risikonya bisa diatur dan hasilnya bisa dibacktest. <a href="${CONFIG.links.learn}" target="_blank" rel="noopener" style="text-decoration:underline">Pelajari dulu tanpa harus menaruh uang →</a></div>` : '';
+  const parkNote = R.park ? `<section class="sec"><div class="sec-h"><span class="lbl">Pantau sinyalnya</span></div><div class="card"><div class="sig">${$('#sigList').innerHTML}</div><p class="sig-foot">Balik ke halaman ini untuk cek. Saat ada titik di zona hijau, pindahkan dari RDPU.</p></div></section>` : '';
+
+  const tg = `<a class="btn ${hasFx ? 'btn-g' : 'btn-p'}" href="${CONFIG.links.telegram}" target="_blank" rel="noopener">Diskusi gratis di Telegram →</a>`;
+  const primary = R.learn ? `<a class="btn btn-p" href="${CONFIG.links.learn}" target="_blank" rel="noopener">Pelajari forex EA di Market Scope →</a>${tg}`
+    : hasFx ? `<a class="btn btn-p" href="${CONFIG.links.copyTrade}" target="_blank" rel="noopener sponsored">Mulai copy trade →</a>${tg}`
+    : tg;
+
+  $('#scr-result').innerHTML = `
+    ${DEMO ? '<div class="note warn" style="margin-top:18px"><b>Mode demo:</b> sinyal & daftar saham di bawah hanya contoh tampilan.</div>' : ''}
+    <div class="kicker" style="margin-top:22px">Rekomendasi · ${fmtRp(S.amount)}</div>
+    <h2 class="res-head" style="margin-top:12px">${head}</h2>
+    <div class="alloc">${stack}${cards}</div>${refNote}
+    <section class="why card" style="margin-top:14px"><div class="lbl">Kenapa?</div><ul>${R.why.map(w => `<li><span>${w}</span></li>`).join('')}</ul></section>
+    ${pitch}${learnNote}${bt}${parkNote}${teaser}
+    <div class="cta">
+      ${primary}
+      <button class="btn btn-g" type="button" id="againBtn">Hitung uang lain</button>
+    </div>`;
+  $('#againBtn').onclick = () => { Object.assign(S, { amount: 0, horizon: null, risk: null, forex: null, step: 0 }); renderQ(); show('quiz'); };
+}
+
+/* =====================================================================
+   TRADINGVIEW WIDGETS
+   ===================================================================== */
+const TV_BASE = 'https://s3.tradingview.com/external-embedding/embed-widget-';
+function tvEmbed(el, name, config, failHtml) {
+  el.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'tradingview-widget-container';
+  const inner = document.createElement('div');
+  inner.className = 'tradingview-widget-container__widget';
+  const sc = document.createElement('script');
+  sc.type = 'text/javascript';
+  sc.async = true;
+  sc.src = TV_BASE + name + '.js';
+  sc.textContent = JSON.stringify(config);          // the widget script reads its own JSON config
+  sc.onerror = () => { el.innerHTML = failHtml || ''; };
+  wrap.appendChild(inner);
+  wrap.appendChild(sc);
+  el.appendChild(wrap);
+}
+
+function initTape() {
+  tvEmbed($('#tape'), 'ticker-tape', {
+    symbols: CONFIG.tv.tape.map(m => ({ proName: m.sym, title: m.label })),
+    showSymbolLogo: false, isTransparent: true, displayMode: 'adaptive', colorTheme: 'dark', locale: 'id'
+  }, '<div class="tvfail">Harga live tidak bisa dimuat sekarang.</div>');
+}
+
+let tvCurrent = null;
+function showChart(key) {
+  const m = CONFIG.tv.markets.find(x => x.key === key) || CONFIG.tv.markets[0];
+  tvCurrent = m.key;
+  document.querySelectorAll('#chartTabs .chip').forEach(c => { const on = c.dataset.k === m.key; c.classList.toggle('on', on); c.setAttribute('aria-selected', on); });
+  const url = CONFIG.links.tradingview;
+  $('#tvOpen').href = url;
+  $('#tvNote').textContent = m.note || '';
+  tvEmbed($('#tvBox'), 'advanced-chart', {
+    autosize: true, symbol: m.sym, interval: 'D', timezone: 'Asia/Jakarta', theme: 'dark', style: '1', locale: 'id',
+    backgroundColor: '#0F1217', gridColor: 'rgba(242,246,255,0.06)',
+    hide_side_toolbar: true, hide_top_toolbar: true, hide_legend: false, hide_volume: true,
+    allow_symbol_change: false, save_image: false, calendar: false, details: false, hotlist: false,
+    withdateranges: false, studies: CONFIG.tv.studies,
+    support_host: 'https://www.tradingview.com'
+  }, `<div class="tvfail">Chart tidak bisa dimuat di sini. <a href="${url}" target="_blank" rel="noopener">Buka ${esc(m.label)} di TradingView ↗</a></div>`);
+}
+
+function initChartPanel() {
+  $('#chartTabs').innerHTML = CONFIG.tv.markets.map(m => `<button type="button" role="tab" class="chip" data-k="${m.key}" aria-selected="false">${esc(m.label)}</button>`).join('');
+  document.querySelectorAll('#chartTabs .chip').forEach(c => c.onclick = () => showChart(c.dataset.k));
+  $('#chartToggle').onclick = () => {
+    const panel = $('#chartPanel'), open = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !open);
+    $('#chartToggle').setAttribute('aria-expanded', open);
+    $('#chartToggle').innerHTML = open ? 'Sembunyikan chart ▴' : 'Lihat chart &amp; RSI ▾';
+    if (open && !tvCurrent) showChart(CONFIG.tv.markets[0].key);   // load the heavy chart only when asked
+  };
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+$('#startBtn').onclick = () => { S.step = 0; renderQ(); show('quiz'); };
+$('#backBtn').onclick = back;
+renderSignals();
+loadSignals();
+initChartPanel();
+initTape();
+</script>
+</body>
+</html>
