@@ -212,7 +212,7 @@ footer{margin-top:30px;border-top:1.5px solid var(--line);padding-top:16px;font-
       <div class="sec-h"><span class="lbl">Sinyal pasar hari ini</span><span class="pill" id="sigPill"><span class="d"></span><span id="sigPillTx">memuat…</span></span></div>
       <div class="card">
         <div class="sig" id="sigList"></div>
-        <p class="sig-foot">Titik di zona hijau (RSI harian &lt; 30) = pasar sedang “diskon” secara teknikal. <span id="sigUpdated"></span></p>
+        <p class="sig-foot">Titik di zona hijau (RSI harian &lt; 35) = pasar sedang “diskon” secara teknikal. <span id="sigUpdated"></span></p>
       </div>
     </section>
 
@@ -222,21 +222,21 @@ footer{margin-top:30px;border-top:1.5px solid var(--line);padding-top:16px;font-
         <div class="chips tabs" id="chartTabs" role="tablist" aria-label="Pilih pasar"></div>
         <div class="tvbox" id="tvBox"></div>
         <p class="sig-foot" id="tvNote" style="margin-top:10px"></p>
-        <p class="sig-foot">Garis RSI di panel bawah chart: di bawah 30 = zona hijau. Angka di TradingView bisa beda 1–2 poin dari angka di atas karena sumber data dan jam tutup berbeda. <a id="tvOpen" href="#" target="_blank" rel="noopener">Buka di TradingView ↗</a></p>
+        <p class="sig-foot">Garis RSI di panel bawah chart: di bawah 35 = zona hijau. Angka di TradingView bisa beda 1–2 poin dari angka di atas karena sumber data dan jam tutup berbeda. <a id="tvOpen" href="#" target="_blank" rel="noopener">Buka di TradingView ↗</a></p>
       </div>
     </section>
 
     <div class="q-actions"><button class="btn btn-p" type="button" id="startBtn">Mulai · 1 menit →</button></div>
 
     <section class="sec bt">
-      <div class="sec-h"><span class="lbl">Kenapa RSI &lt; 30?</span></div>
+      <div class="sec-h"><span class="lbl">Kenapa RSI &lt; 35?</span></div>
       <div class="card">
-        <p style="font-size:15.5px;color:var(--tx2)">Kami uji: <b style="color:var(--tx)">setiap kali RSI harian turun di bawah 30, beli lalu tahan 1 tahun.</b> Hasilnya:</p>
+        <p style="font-size:15.5px;color:var(--tx2)">Kami uji: <b style="color:var(--tx)">setiap kali RSI harian turun di bawah 35, beli lalu tahan 1 tahun.</b> Hasilnya:</p>
         <table>
           <tr><th>Pasar</th><th>Rata-rata 1 thn</th></tr>
-          <tr><td>Nasdaq (US)</td><td>+24%</td></tr>
-          <tr><td>IHSG</td><td>+14%</td></tr>
-          <tr><td>Bitcoin</td><td>+37%</td></tr>
+          <tr><td>Nasdaq (US)</td><td>+29%</td></tr>
+          <tr><td>IHSG</td><td>+16%</td></tr>
+          <tr><td>Bitcoin</td><td style="font-weight:500;font-size:13px;color:var(--mu)">+37%</td></tr>
         </table>
       </div>
     </section>
@@ -251,7 +251,7 @@ footer{margin-top:30px;border-top:1.5px solid var(--line);padding-top:16px;font-
   <!-- ============ RESULT ============ -->
   <main id="scr-result" class="hidden"></main>
 
-  <p class="disc"><b>Disclaimer:</b> Halaman ini adalah alat edukasi, bukan nasihat investasi pribadi. Semua instrumen investasi dan trading mengandung risiko, termasuk kehilangan modal. Sinyal RSI adalah indikator teknikal, bukan jaminan harga akan naik. Kinerja masa lalu tidak menjamin hasil di masa depan. Keputusan dan risiko sepenuhnya ada pada kamu.</p>
+  <p class="disc"><b>Disclaimer:</b> Halaman ini adalah alat edukasi, bukan nasihat investasi pribadi. Semua instrumen investasi dan trading mengandung risiko, termasuk kehilangan modal. Sinyal RSI adalah indikator teknikal, bukan jaminan harga akan naik. Kinerja masa lalu tidak menjamin hasil di masa depan. Keputusan dan risiko sepenuhnya ada pada kamu. Beberapa link di halaman ini (TradingView, Bibit, Heygo, copy trade) adalah link referral/afiliasi.</p>
   <footer><span>© Market Scope ID</span><span>Edukasi · bukan ajakan beli</span><span>Chart &amp; harga: <a href="https://www.tradingview.com/?aff_id=1171693" target="_blank" rel="noopener sponsored" style="text-decoration:underline">TradingView</a></span></footer>
 </div>
 
@@ -262,7 +262,7 @@ footer{margin-top:30px;border-top:1.5px solid var(--line);padding-top:16px;font-
 const CONFIG = {
   signalsUrl: 'https://taruh-mana-signals.sir-ahadi.workers.dev',   // 'signals.json' (written by update_signals.py) OR your Worker URL, e.g. https://taruh-mana.yourname.workers.dev
   maxStaleDays: 5,              // a market's RSI older than this is shown as 'data lama' and NOT used for routing
-  rsiThreshold: 30,
+  rsiThreshold: 35,
   // ---- Allocation knobs (edit here) ----
   forexPct: { m: 50, h: 70 },   // % to Forex EA for Mid / High risk; the rest goes to RDPU
   shortStockPct: { m: 30, h: 50 }, // horizon 1–3 bln + Nasdaq/IHSG green: % to stocks; rest split RDPT/RDPU
@@ -316,10 +316,10 @@ const CONFIG = {
   }
 };
 
-/* Backtest numbers (RSI D1 < 30, hold 1 year) */
+/* Backtest numbers (RSI D1 < 35, hold 1 year, one signal per 60-day episode; rerun 2026-10-02) */
 const BACKTEST = {
-  nasdaq: { n: 8, win: '7/8', avg: '+24%', worst: '−21%', period: '2016–2026', m3: { avg: '+11%', win: '67%' } },
-  ihsg:   { n: 31, win: '74%', avg: '+14%', worst: '−42%', period: '2005–2025', m3: { avg: '−0,6%', win: '59%' } },
+  nasdaq: { n: 18, win: '14/18', avg: '+16%', worst: '−26%', period: '2016–2026', m3: { avg: '+7%', win: '79%' } },
+  ihsg:   { n: 44, win: '73%', avg: '+16%', worst: '−46%', period: '2005–2025', m3: { avg: '+3%', win: '67%' } },
   btc:    null
 };
 
@@ -728,7 +728,7 @@ function renderResult() {
     const b = BACKTEST[btKey];
     bt = `<section class="sec"><div class="lbl">Secara historis · ${btKey === 'nasdaq' ? 'Nasdaq' : 'IHSG'} ${b.period}</div>
       <div class="stat"><div><b class="go">${b.win}</b><small>sinyal untung setelah 1 thn</small></div><div><b>${b.avg}</b><small>rata-rata 1 tahun</small></div><div><b class="neg">${b.worst}</b><small>hasil terburuk</small></div></div>
-      <div class="note">Sinyal bagus pun biasanya diikuti <b>penurunan ±12–14%</b> di tengah jalan sebelum naik. Beli bertahap dan jangan panik.</div></section>`;
+      <div class="note">Sinyal bagus pun biasanya diikuti <b>penurunan ±12–13%</b> di tengah jalan sebelum naik. Beli bertahap dan jangan panik.</div></section>`;
   }
   if (R.kind === 'stock-short' && btKey) {
     const parts = R.items.filter(i => i.k === 'US' || i.k === 'IHSG').map(i => { const k = i.k === 'US' ? 'nasdaq' : 'ihsg'; const m = BACKTEST[k].m3; return `${k === 'nasdaq' ? 'Nasdaq' : 'IHSG'}: rata-rata ${m.avg}, untung di ${m.win} kejadian`; });
